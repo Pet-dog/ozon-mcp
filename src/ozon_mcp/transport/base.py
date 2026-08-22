@@ -9,6 +9,7 @@ Security/correctness notes:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import UTC
 from typing import Any
 
@@ -77,6 +78,7 @@ class BaseClient:
         path: str,
         *,
         json_body: dict[str, Any] | None = None,
+        query_params: Mapping[str, Any] | None = None,
         operation_id: str | None = None,
         section: str | None = None,
         with_retry: bool = True,
@@ -103,7 +105,11 @@ class BaseClient:
                 )
                 try:
                     response = await self._client.request(
-                        method, path, json=json_body, headers=headers
+                        method,
+                        path,
+                        json=json_body,
+                        params=query_params,
+                        headers=headers,
                     )
                 except httpx.TimeoutException as e:
                     # Treat as retryable server-side issue.

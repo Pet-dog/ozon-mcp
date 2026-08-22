@@ -1,7 +1,7 @@
 [project]
 name = "ozon-mcp"
-version = "0.6.0"
-description = "Ozon Seller API & Performance API knowledge-rich MCP server for AI agents"
+version = "0.7.0"
+description = "Strict read-only PetDog/Ozon analytics MCP server for AI agents"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "PCDCK", url = "https://github.com/PCDCK" }]
@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "mcp>=1.2.0",
+    "mcp>=1.27,<2",
     "pydantic>=2.9.0",
     "pydantic-settings>=2.5.0",
     "rank-bm25>=0.2.2",
@@ -49,10 +49,10 @@ dev = [
 ozon-mcp = "ozon_mcp.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/PCDCK/ozon-mcp"
-Repository = "https://github.com/PCDCK/ozon-mcp"
-Issues = "https://github.com/PCDCK/ozon-mcp/issues"
-Changelog = "https://github.com/PCDCK/ozon-mcp/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Pet-dog/ozon-mcp"
+Repository = "https://github.com/Pet-dog/ozon-mcp"
+Issues = "https://github.com/Pet-dog/ozon-mcp/issues"
+Changelog = "https://github.com/Pet-dog/ozon-mcp/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["hatchling"]

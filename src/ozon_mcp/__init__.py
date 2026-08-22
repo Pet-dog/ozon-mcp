@@ -1,3 +1,8 @@
-"""Ozon API knowledge-rich MCP server for AI agents."""
+"""Strict read-only PetDog/Ozon analytics MCP server.
 
-__version__ = "0.6.0"
+Exposes a fixed allowlist of Ozon Seller/Performance read operations as
+closed, PII-sanitized projections for AI agents. No mutations, no generic
+execution surface.
+"""
+
+__version__ = "0.7.0"

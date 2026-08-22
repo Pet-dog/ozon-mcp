@@ -142,28 +142,6 @@ async def test_get_examples(server) -> None:
     assert all("request" in e for e in result["examples"])
 
 
-async def test_list_methods_for_subscription(server) -> None:
-    result = _parse(
-        await server.call_tool(
-            "ozon_list_methods_for_subscription",
-            {"tier": "PREMIUM_PLUS"},
-        )
-    )
-    assert result["count"] > 0
-    assert all("PREMIUM_PLUS" in m["all_tiers_mentioned"] for m in result["methods"])
-
-
-async def test_list_methods_for_subscription_invalid_tier(server) -> None:
-    result = _parse(
-        await server.call_tool(
-            "ozon_list_methods_for_subscription",
-            {"tier": "made-up"},
-        )
-    )
-    assert "error" in result
-    assert "valid_tiers" in result
-
-
 async def test_describe_method_includes_subscription_when_present(server) -> None:
     result = _parse(
         await server.call_tool(

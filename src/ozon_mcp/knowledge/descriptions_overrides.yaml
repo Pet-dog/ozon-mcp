@@ -27,7 +27,8 @@
     и его можно вернуть через ProductAPI_ProductUnarchive. Используй
     для временного скрытия sezonных или out-of-stock товаров вместо
     удаления (DeleteProducts необратим). Принимает массив product_id
-    до 100 за раз. Требует confirm_write=True.
+    до 100 за раз. В строгом read-only форке выполнение этого метода
+    недоступно.
 
 - operation_id: ProductAPI_ProductUnarchive
   source: curated
@@ -35,7 +36,7 @@
     WRITE-метод: возвращает товары из архива в активный статус. Парный
     к ProductAPI_ProductArchive. Используй для возврата к продаже
     товаров временно скрытых архивацией. Принимает массив product_id.
-    Требует confirm_write=True.
+    В строгом read-only форке выполнение этого метода недоступно.
 
 - operation_id: ProductAPI_ProductInfoPicturesV2
   source: curated

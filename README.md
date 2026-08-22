@@ -1,524 +1,213 @@
-# ozon-mcp
+# ozon-mcp (Pet-dog strict read-only fork)
 
-> MCP server for the Ozon Seller & Performance APIs.
-> Connect any AI agent to your Ozon cabinet in minutes.
+> Strict read-only Ozon Seller & Performance analytics MCP server for the
+> PetDog SEO-SXO pipeline. Fork of [PCDCK/ozon-mcp](https://github.com/PCDCK/ozon-mcp).
 
-[![CI](https://github.com/PCDCK/ozon-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/PCDCK/ozon-mcp/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![MCP](https://img.shields.io/badge/MCP-compatible-orange)
+![MCP](https://img.shields.io/badge/MCP-v1-orange)
 
-ozon-mcp is a knowledge-rich MCP server that turns the entire Ozon
-seller toolkit into 15 high-leverage tools. AI agents (Claude, Cursor,
-Cline, Continue, Goose, Zed, …) can search the API in Russian or
-English, drill into any of 466 methods with a fully-resolved JSON
-Schema, and execute calls with built-in safety guards. Subscription-
-aware, automatic pagination over all 4 cursor styles, retry/back-off
-on 429s, and 13 ready-to-use analytical workflows.
+## What this is
 
-**Key facts:** 466 indexed methods (420 Seller + 46 Performance),
-55 sections, 5 subscription tiers modelled, 38 paginated endpoints
-auto-walked, 43 destructive methods double-gated, 13 curated
-workflows for typical seller scenarios.
+An MCP (Model Context Protocol) stdio server that exposes a fixed, literal
+allowlist of Ozon read operations as closed, PII-sanitized projections,
+plus offline API discovery/reference tools to help agents reason about the
+Ozon API surface.
 
----
+## Non-negotiable read-only boundary
 
-## Quick start
+- Exactly **12 literal allowlisted read-only operations** (see
+  `src/ozon_mcp/readonly.py`). Anything not on the list is refused before
+  an HTTP request is constructed — no inference from HTTP method or
+  upstream classification.
+- **No generic call/fetch executor.** The upstream `ozon_call_method` /
+  `ozon_fetch_all` tools were removed. No tool accepts an arbitrary
+  operation id, path, or method name.
+- **No report generation** and no other provider-side state creation.
+- **No mutation flags.** There is no `confirm_write`,
+  `i_understand_this_modifies_data`, or any equivalent bypass argument
+  anywhere in the tool surface.
+- **Closed PII-sanitized projections.** Raw Ozon responses are never
+  returned by the analytics tools. Projections exclude names, phones,
+  email addresses, delivery/billing addresses, comments, credentials,
+  authorization headers, arbitrary custom fields, and upstream error
+  payloads. Errors expose only a local category, HTTP status, operation
+  id, retryability, and a sanitized message.
+- **stderr for logs, stdout for MCP framing.** Application and transport
+  logging goes to stderr; stdout is reserved exclusively for the MCP
+  stdio protocol.
 
-### Prerequisites
+Every network-capable tool is annotated `readOnlyHint: true` and
+`destructiveHint: false`.
 
-- Python 3.12 or 3.13
-- `uv` package manager — install with
-  `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- Ozon Seller API credentials (Client-Id + Api-Key) — get them at
-  <https://seller.ozon.ru/app/settings/api-keys>
+## Tools (21 registered)
 
-### Installation
+### Offline discovery / reference / workflow tools (11)
+
+These never touch the network:
+
+- `ozon_list_sections` — API section overview with method counts
+- `ozon_search_methods` — BM25 search (Russian + English) with filters
+- `ozon_describe_method` — full method spec with resolved JSON Schema
+- `ozon_get_section` — methods inside a section
+- `ozon_get_related_methods` — method-graph neighbours
+- `ozon_list_workflows` — curated workflow overview
+- `ozon_get_workflow` — full step-by-step workflow plan
+- `ozon_get_rate_limits` — per-method/per-section rate limits
+- `ozon_get_error_catalog` — error codes and fixes
+- `ozon_get_examples` — request payload examples
+- `ozon_get_swagger_meta` — bundled snapshot metadata and hashes
+
+### PetDog analytics tools (10)
+
+All network analytics goes through these fixed workflows over the
+12-operation allowlist, each returning a closed projection:
+
+- `ozon_seller_status` — Seller identity/subscription status
+  (`SellerAPI_SellerInfo`).
+- `ozon_sales_analytics` — sales/postings and revenue over a bounded
+  period (`PostingAPI_GetFboPostingList`, `PostingAPI_GetFbsPostingListV3`).
+- `ozon_finance_analytics` — finance, commissions, logistics
+  (`FinanceAPI_FinanceTransactionListV3`).
+- `ozon_returns_analytics` — returns (`returnsList`).
+- `ozon_inventory_analytics` — stocks and shortage risk
+  (`ProductAPI_GetProductList`, `ProductAPI_GetProductInfoStocks`).
+- `ozon_price_promotion_analytics` — prices and promotions
+  (`ProductAPI_GetProductInfoPrices`).
+- `ozon_advertising_analytics` — advertising **expense + daily stats**
+  (`ListCampaigns`, `ListReports`, `GetCampaignExpense`,
+  `GetCampaignDailyStats`).
+- `ozon_sku_performance` — per-SKU performance across the above sources.
+- `ozon_catalog_mapping` — SKU/offer catalog mapping
+  (`ProductAPI_GetProductList`).
+- `ozon_retailcrm_projection` — anonymized RetailCRM reconciliation
+  projection with HMAC join keys (no RetailCRM calls).
+
+## Advertising spend semantics
+
+Aggregate advertising spend is authoritative from **`GetCampaignExpense`**
+(expense rows). `GetCampaignDailyStats` daily spend is a **fallback only**,
+used when expense rows are unavailable — never both, which prevents double
+counting. Daily stats remain the source for impressions, clicks, orders,
+and revenue. **No DRR is calculated in this server**; that belongs to the
+upper SEO-SXO layer.
+
+## Channel attribution
+
+Ozon is a separate `source_channel: "ozon"`. Ozon orders that also enter
+RetailCRM must be reconciled by their HMAC `join_key` in the upper
+SEO-SXO layer — never summed twice. This MCP does not merge channels or
+compute combined revenue.
+
+Every commerce result declares `source_channel: "ozon"`, date basis,
+requested period, timezone, pagination/completeness, and data provenance.
+Ozon revenue is never labeled as petdog.ru website revenue.
+
+## Installation
+
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-git clone https://github.com/PCDCK/ozon-mcp.git
+git clone https://github.com/Pet-dog/ozon-mcp.git
 cd ozon-mcp
-uv sync
+uv sync --frozen
 ```
 
-### Verify it works
+Run:
 
 ```bash
-uv run ozon-mcp --help
+uv run ozon-mcp
 ```
 
-You should see the FastMCP usage line. The server speaks the MCP stdio
-protocol — point any compatible client at it (instructions below).
+The server speaks MCP over stdio.
 
----
+## Environment variables
 
-## Connecting to your AI agent
+Set credentials via environment variables (names only — never commit
+secret values to files):
 
-ozon-mcp uses the standard MCP stdio transport. Every example below
-exposes the same 15 tools — pick whichever client you already use.
+- `OZON_CLIENT_ID` — Seller API client id
+- `OZON_API_KEY` — Seller API key
+- `OZON_PERFORMANCE_CLIENT_ID` — Performance API client id
+- `OZON_PERFORMANCE_CLIENT_SECRET` — Performance API client secret
+- `OZON_ANALYTICS_HMAC_SECRET` — secret for reconciliation join keys
+- `OZON_LOG_LEVEL` — log level for stderr logging
 
-### Claude Desktop
+## MCP client configuration (generic example)
 
-Edit:
-`~/Library/Application Support/Claude/claude_desktop_config.json`
-(macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows).
+Use placeholders; do not check credentials into config files under version
+control:
 
 ```json
 {
   "mcpServers": {
     "ozon": {
       "command": "uv",
-      "args": ["--directory", "/absolute/path/to/ozon-mcp",
-                "run", "ozon-mcp"],
+      "args": ["--directory", "/absolute/path/to/ozon-mcp", "run", "ozon-mcp"],
       "env": {
-        "OZON_CLIENT_ID": "your-seller-client-id",
-        "OZON_API_KEY": "your-seller-api-key",
-        "OZON_PERFORMANCE_CLIENT_ID": "your-perf-client-id",
-        "OZON_PERFORMANCE_CLIENT_SECRET": "your-perf-secret"
+        "OZON_CLIENT_ID": "<your-seller-client-id>",
+        "OZON_API_KEY": "<your-seller-api-key>",
+        "OZON_PERFORMANCE_CLIENT_ID": "<your-performance-client-id>",
+        "OZON_PERFORMANCE_CLIENT_SECRET": "<your-performance-client-secret>",
+        "OZON_ANALYTICS_HMAC_SECRET": "<your-hmac-secret>",
+        "OZON_LOG_LEVEL": "<log-level>"
       }
     }
   }
 }
 ```
 
-### Claude Code (CLI)
+## Bundled spec evidence
+
+The bundled Ozon OpenAPI snapshots carry content hashes and an
+observation timestamp:
+
+- Observed: `2026-04-16T21:47:53Z`
+- Seller spec SHA-256:
+  `c54962e9481ac776e14c0fe4f987e0ff74fde68a793e6b640f70db6cdaabdba5`
+- Performance spec SHA-256:
+  `27ad70709fdcc6323c4ba9d7d9af20e21a39397023e2776a6c171ab08aa05a06`
+
+The server verifies the SHA-256 of both actual bundled files against this
+metadata at runtime. Missing or malformed evidence, an unreadable file, or
+a hash mismatch blocks execution before a provider request is constructed.
+
+This April 2026 snapshot is honestly stale at the current date; it is not
+treated as fresh and is not updated automatically. Verified-but-stale evidence
+remains usable only for the exact 12 pinned read-only operations, and every
+result discloses `spec_snapshot.stale: true`. A live response-shape canary is
+required after deployment to confirm that those pinned contracts still match
+the live API before relying on them in production.
+
+## Tests
+
+Bounded test commands:
 
 ```bash
-cd /path/to/ozon-mcp
-claude mcp add ozon -- uv run ozon-mcp
-```
-
-Or add to `~/.claude/mcp.json` with the same shape as the Claude
-Desktop config above.
-
-### Cursor
-
-Settings → MCP → Add new MCP Server, or edit `~/.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "ozon": {
-      "command": "uv",
-      "args": ["--directory", "/absolute/path/to/ozon-mcp",
-                "run", "ozon-mcp"]
-    }
-  }
-}
-```
-
-### Windsurf
-
-Edit `~/.codeium/windsurf/mcp_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "ozon": {
-      "command": "uv",
-      "args": ["--directory", "/absolute/path/to/ozon-mcp",
-                "run", "ozon-mcp"]
-    }
-  }
-}
-```
-
-### Cline (VS Code extension)
-
-Cline → Settings → MCP Servers → Add:
-
-```json
-{
-  "ozon": {
-    "command": "uv",
-    "args": ["--directory", "/absolute/path/to/ozon-mcp",
-              "run", "ozon-mcp"]
-  }
-}
-```
-
-### Continue.dev
-
-Edit `~/.continue/config.json`:
-
-```json
-{
-  "experimental": {
-    "modelContextProtocolServers": [
-      {
-        "transport": {
-          "type": "stdio",
-          "command": "uv",
-          "args": ["--directory", "/absolute/path/to/ozon-mcp",
-                    "run", "ozon-mcp"]
-        }
-      }
-    ]
-  }
-}
-```
-
-### Goose, Zed, or any other MCP client
-
-Any client that speaks MCP stdio will work. Generic config:
-
-```yaml
-command: uv
-args: ["--directory", "/absolute/path/to/ozon-mcp", "run", "ozon-mcp"]
-transport: stdio
-env:
-  OZON_CLIENT_ID: ...
-  OZON_API_KEY: ...
-```
-
-Browse the official MCP client list at
-<https://modelcontextprotocol.io/clients>.
-
----
-
-## Usage examples
-
-All examples below show realistic responses copied from
-[`tests/fixtures/responses/`](tests/fixtures/responses/) — anonymized
-identifiers (`99000001`, `TEST-SKU-001`) but real shape.
-
-### Example 1 — Get all your products
-
-> **You:** Use `ozon_fetch_all` with `operation_id="ProductAPI_GetProductList"`
-> to get all my products.
-
-The agent calls:
-
-```json
-{
-  "operation_id": "ProductAPI_GetProductList",
-  "params": {"filter": {"visibility": "ALL"}},
-  "max_items": 10000
-}
-```
-
-Server walks the `last_id` cursor automatically and returns:
-
-```json
-{
-  "ok": true,
-  "items": [
-    {"product_id": 99000001, "offer_id": "TEST-SKU-001", "archived": false},
-    {"product_id": 99000002, "offer_id": "TEST-SKU-002", "archived": false},
-    {"product_id": 99000003, "offer_id": "TEST-SKU-003", "archived": true}
-  ],
-  "total_fetched": 3,
-  "truncated": false,
-  "pages_fetched": 1
-}
-```
-
-### Example 2 — Find products at risk of going out of stock
-
-> **You:** Run the `oos_risk_analysis` workflow for my cabinet.
-
-Agent first inspects the workflow:
-
-```json
-ozon_get_workflow({"name": "oos_risk_analysis"})
-```
-
-→ tells the agent to call `AnalyticsAPI_StocksTurnover` (rate-limited
-to 1 req/min — the server's per-endpoint queue handles that for you)
-and how to interpret `turnover_grade`. The call returns:
-
-```json
-{
-  "items": [
-    {"sku": 99000001, "current_stock": 12, "ads": 1.5,
-     "idc": 8.0, "turnover_grade": "DEFICIT",
-     "turnover_grade_cluster": "DEFICIT_GROWING"},
-    {"sku": 99000002, "current_stock": 25, "ads": 0.8,
-     "idc": 31.25, "turnover_grade": "OPTIMAL",
-     "turnover_grade_cluster": "OPTIMAL_FALLING"},
-    {"sku": 99000003, "current_stock": 0, "ads": 0.0,
-     "idc": 0.0, "turnover_grade": "NO_SALES",
-     "turnover_grade_cluster": "NO_SALES"}
-  ]
-}
-```
-
-The workflow's `interpret` field tells the agent to flag SKUs where
-`idc < 14` or `turnover_grade ∈ {DEFICIT, NO_SALES}` and surface them
-sorted by `idc asc`.
-
-### Example 3 — Full cabinet health check
-
-> **You:** Check the health of my Ozon cabinet using the
-> `cabinet_health_check` workflow.
-
-The workflow tells the agent to read three endpoints in parallel —
-`RatingAPI_RatingSummaryV1`, `SellerAPI_SellerInfo`,
-`AverageDeliveryTimeSummary`. The first call returns:
-
-```json
-{
-  "groups": [
-    {
-      "group_name": "Выполнение заказов",
-      "items": [
-        {"rating": "rating_on_time", "name": "Процент заказов вовремя",
-         "current_value": 97.5, "status": "OK", "value_type": "PERCENT"},
-        {"rating": "rating_review_avg_score", "name": "Средняя оценка",
-         "current_value": 4.7, "status": "OK", "value_type": "RATING"}
-      ]
-    },
-    {
-      "group_name": "Качество сервиса",
-      "items": [
-        {"rating": "rating_price_index", "name": "Индекс цен",
-         "current_value": 1.01, "status": "OK", "value_type": "INDEX"}
-      ]
-    }
-  ],
-  "premium_scores": [
-    {"rating": "rating_on_time", "value": 97.5,
-     "penalty_score_per_day": 0, "scope": "premium_plus"}
-  ]
-}
-```
-
-### Example 4 — Analyze product pricing
-
-> **You:** Which of my products have a red price index?
-
-Agent runs the `pricing_analysis` workflow and inspects the
-`price_indexes.color_index` field on every item:
-
-```json
-{
-  "product_id": 99000001, "offer_id": "TEST-SKU-001",
-  "price": {"price": "399.0000", "marketing_seller_price": "399.0000",
-             "min_price": "299.0000"},
-  "price_indexes": {
-    "color_index": "WITHOUT_INDEX",
-    "ozon_index_data": {"minimal_price": "395.0000",
-                          "price_index_value": 1.01}
-  },
-  "commissions": {"sales_percent_fbo": 0.13, "sales_percent_fbs": 0.13}
-}
-```
-
-The workflow's `common_mistakes` list reminds the agent to compare
-against `marketing_seller_price` (the actual buyer-facing price), not
-just the base `price`.
-
-### Example 5 — Content audit
-
-> **You:** Find products with low content rating and tell me what to
-> improve.
-
-Agent runs `content_audit`, gets per-SKU ratings + the list of
-attributes that would lift the score:
-
-```json
-{
-  "products": [
-    {
-      "sku": 99000001, "rating": 85,
-      "groups": [
-        {"key": "media", "rating": 100},
-        {"key": "characteristics", "rating": 75,
-         "improve_attributes": [
-           {"id": 4191, "name": "Цвет"},
-           {"id": 8292, "name": "Материал"}
-         ],
-         "improve_at_least": 4}
-      ]
-    }
-  ]
-}
-```
-
-The workflow tells the agent that a `+10` lift to `rating` measurably
-improves search ranking — so filling in those two attributes is worth
-~4 points.
-
----
-
-## Available tools (15)
-
-| Tool | What it does |
-|---|---|
-| `ozon_call_method` | Execute any Ozon API method with safety + subscription guards |
-| `ozon_fetch_all` | Auto-paginate — get every page, not just the first |
-| `ozon_describe_method` | Full docs for a method: schema, examples, rate limit, quirks |
-| `ozon_search_methods` | BM25 search across 466 methods (Russian or English, with stemming) |
-| `ozon_list_sections` | Browse the API by section |
-| `ozon_get_section` | All methods inside one section |
-| `ozon_list_workflows` | List ready-made analytical workflows (filterable by category) |
-| `ozon_get_workflow` | Full step-by-step plan for one workflow |
-| `ozon_get_related_methods` | Methods that work well together (auto-extracted graph) |
-| `ozon_get_examples` | Curated request/response examples for a method |
-| `ozon_get_rate_limits` | Per-method, per-section, or all |
-| `ozon_get_subscription_status` | Read your current cabinet's subscription tier |
-| `ozon_list_methods_for_subscription` | What you unlock on a given tier |
-| `ozon_get_swagger_meta` | Check that bundled API specs are still fresh |
-| `ozon_get_error_catalog` | Look up any Ozon error code |
-
----
-
-## Ready-made workflows (13)
-
-Workflows are curated step-by-step recipes. Use
-`ozon_get_workflow("name")` to fetch the full plan, including
-`interpret`, `when_to_use`, `common_mistakes`, and the recommended
-DB schema for sync-style workflows.
-
-| Workflow | Category | What it solves |
-|---|---|---|
-| `oos_risk_analysis` | analytics | Find products about to go out of stock |
-| `cabinet_health_check` | health | Check all seller-rating metrics in one shot |
-| `content_audit` | content | Find low-content-rating cards + actionable attributes |
-| `pricing_analysis` | pricing | Find products with non-competitive pricing |
-| `warehouse_stock_distribution` | warehouse | Per-warehouse stock breakdown for FBO |
-| `sync_products_catalog` | catalog | Full product catalog snapshot |
-| `sync_orders_fbo` | orders | Incremental FBO order sync |
-| `sync_orders_fbs` | orders | Incremental FBS / rFBS order sync |
-| `sync_finance_transactions` | finance | Finance transactions for unit economics |
-| `sync_analytics_daily` | analytics | Daily revenue / orders time series |
-| `sync_advertising_campaigns` | advertising | Performance API ads catalog |
-| `sync_warehouse_stocks` | warehouse | FBS warehouse stocks |
-| `sync_returns_rfbs` | returns | rFBS returns sync |
-
----
-
-## API coverage
-
-| API | Methods | Sections |
-|---|---|---|
-| Ozon Seller API | 420 | 49 |
-| Ozon Performance API | 46 | 6 |
-| **Total** | **466** | **55** |
-
-Subscription tiers modelled (low → high):
-`LITE → STANDARD → PREMIUM → PREMIUM_PLUS → PREMIUM_PRO`.
-
----
-
-## Key features
-
-### Subscription-aware
-
-The server knows which methods are gated on Premium tiers and refuses
-the call before it leaves your machine — saves your API quota:
-
-```json
-{
-  "error": "subscription_gate",
-  "error_type": "subscription_gate",
-  "code": 7,
-  "message": "Endpoint requires PREMIUM_PRO, cabinet has PREMIUM_PLUS",
-  "operation_id": "ProductPricesDetails",
-  "required_tier": "PREMIUM_PRO",
-  "cabinet_tier": "PREMIUM_PLUS",
-  "retryable": false,
-  "http_call_skipped": true
-}
-```
-
-### Rate-limit management
-
-- Auto-retry with exponential back-off on 429.
-- Honours `Retry-After` (both delta-seconds and RFC 7231 HTTP-date).
-- Per-endpoint semaphore for slow methods (e.g.
-  `/v1/analytics/turnover/stocks` is hard-limited to 1 req/min on the
-  Ozon side — the server queues parallel calls automatically).
-
-### Auto-pagination
-
-`ozon_fetch_all` handles all four pagination patterns Ozon uses:
-`offset/limit`, `cursor`, `last_id`, `page_number`. It also detects
-the rare case where the server returns the same cursor twice in a
-row and breaks the loop instead of spinning forever.
-
-```python
-ozon_fetch_all(
-  operation_id="ProductAPI_GetProductList",
-  params={"filter": {"visibility": "ALL"}},
-  max_items=10_000,
-)
-# → {"items": [...all products...], "total_fetched": 847,
-#    "truncated": false, "pages_fetched": 1}
-```
-
-### Unified error envelope
-
-Every tool that can fail returns the same shape — easy to branch on
-in any agent or downstream code:
-
-```json
-{
-  "error": "rate_limit_exceeded",
-  "error_type": "rate_limit | subscription_gate | not_found | invalid_params | server_error | timeout | auth | forbidden | conflict | ...",
-  "message": "Human-readable explanation",
-  "code": 429,
-  "operation_id": "AnalyticsAPI_StocksTurnover",
-  "endpoint": "/v1/analytics/turnover/stocks",
-  "retryable": true,
-  "retry_after_seconds": 60
-}
-```
-
-### Safety classification baked into the catalog
-
-Every method carries a `safety` field — `read`, `write`, or
-`destructive`. Write requires `confirm_write=True`; destructive
-requires both `confirm_write=True` AND
-`i_understand_this_modifies_data=True`. Heuristics from the schema
-extractor are reinforced by 43 curated `safety_warning` entries in
-`quirks.yaml` so the agent always sees a clear reminder before
-mutating anything.
-
----
-
-## Keeping the API specs up to date
-
-Ozon refreshes their swagger periodically. To sync:
-
-```bash
-cd parser/                               # the parser repo / drop-zone
-python parse_swagger.py                  # downloads + sanitises both APIs
-cp seller_swagger.json ../src/ozon_mcp/data/
-cp perf_swagger.json   ../src/ozon_mcp/data/
-cp swagger_meta.json   ../src/ozon_mcp/data/
-```
-
-Run `ozon_get_swagger_meta` to confirm the bundled snapshot is fresh
-(the CI also fails the build when the snapshot is older than 14
-days).
-
----
-
-## Development
-
-```bash
-git clone https://github.com/PCDCK/ozon-mcp.git
-cd ozon-mcp
-uv sync --extra dev
-
-# Tests (≈25s, 274 currently)
-uv run pytest tests/ --ignore=tests/live
-
-# Code quality
+uv run pytest tests/unit tests/golden tests/integration
 uv run ruff check src tests
-uv run mypy src/ozon_mcp
-
-# Coverage
-uv run pytest tests/ --ignore=tests/live --cov=src/ozon_mcp \
-    --cov-report=term-missing
+uv run mypy src
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add knowledge
-(workflows, examples, quirks, subscription overrides).
+Live tests (`tests/live`, marker `live`) require real credentials and are
+excluded from default discovery.
 
----
+## Current limitations
 
-## License
+- Read-only by design: no write, mutation, or report-generation surface.
+- The analytics surface is scoped to PetDog workflows; it is not a
+  general-purpose Ozon API client.
+- Dynamic provider execution is blocked when snapshot evidence is missing,
+  malformed, unreadable, or hash-mismatched. Verified-but-stale evidence
+  continues only for the exact 12 pinned read-only operations, with
+  `spec_snapshot.stale: true` in every result; there is no route beyond that
+  pinned set.
+- DRR and cross-channel reconciliation happen in the upper SEO-SXO layer,
+  not here.
+- Ozon runtime can be stricter than the swagger declares; projections
+  treat upstream fields as nullable where known quirks exist.
 
-[MIT](LICENSE)
+## Attribution & license
+
+Forked from [PCDCK/ozon-mcp](https://github.com/PCDCK/ozon-mcp)
+(upstream v0.6.0). MIT license — see [LICENSE](LICENSE).

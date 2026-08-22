@@ -1,5 +1,7 @@
 # Pagination patterns auto-extracted from swagger (38 methods).
-# Used by ozon_fetch_all to walk all pages of a list endpoint.
+# Offline pagination knowledge for planning and for the specialized
+# read-only projections — the caller (or a dedicated bounded tool)
+# walks the pages using the pattern below.
 #
 # type values:
 #   offset_limit — body.offset += limit each iteration

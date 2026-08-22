@@ -233,10 +233,8 @@ def _serialize_method(
         out["safety_reason"] = m.safety_reason
     if m.safety in ("write", "destructive"):
         out["safety_warning"] = (
-            "This method modifies data. ozon_call_method will refuse to invoke it "
-            "without confirm_write=True"
-            + (" AND i_understand_this_modifies_data=True" if m.safety == "destructive" else "")
-            + "."
+            "This method modifies data. Execution is unavailable in this "
+            "strict read-only fork."
         )
 
     if m.deprecated:
@@ -264,10 +262,11 @@ def _serialize_method(
             if override.note:
                 subscription_block["required_note"] = override.note
     if subscription_block:
-        # `pre_check_available` tells callers whether the server can
-        # reject the call BEFORE issuing the HTTP request (i.e. we have a
-        # curated, concrete requirement). When False, a call may still be
-        # rejected by Ozon — we just don't know that up front.
+        # `pre_check_available` is kept for compatibility: it means a
+        # curated subscription requirement is available for planning.
+        # This strict read-only fork exposes no generic method executor,
+        # so nothing is executed or rejected locally — the field is
+        # informational only.
         required_value = subscription_block.get("required")
         subscription_block["pre_check_available"] = (
             required_value is not None and required_value != "unknown"
@@ -277,10 +276,9 @@ def _serialize_method(
             "`required` is curated (swagger + sync-log evidence). "
             "`tiers_mentioned` + `min_tier_hint` are auto-extracted from "
             "method text — use them only when `required` is absent or "
-            "\"unknown\". When `pre_check_available` is true, "
-            "ozon_call_method will refuse the call locally if the "
-            "cabinet tier is insufficient. Call ozon_get_subscription_status "
-            "to learn the current account tier.",
+            "\"unknown\". `pre_check_available` means a curated "
+            "requirement is available for planning; this fork "
+            "exposes no generic method executor.",
         )
         out["subscription"] = subscription_block
 
