@@ -4,6 +4,51 @@ All notable changes to ozon-mcp follow [keep-a-changelog](https://keepachangelog
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-08-22
+
+Strict read-only release for the PetDog SEO-SXO pipeline. The public
+surface is a fixed allowlist of Ozon read operations returning closed,
+PII-sanitized projections.
+
+### Added
+
+- **Strict read-only surface** — exactly 12 literal allowlisted read
+  operations in `readonly.py`; anything else is refused before an HTTP
+  request is constructed. Every network tool is annotated
+  `readOnlyHint: true`, `destructiveHint: false`.
+- **10 PetDog analytics tools** — seller status, sales, finance, returns,
+  inventory, prices/promotions, advertising (expense + daily stats), SKU
+  performance, catalog mapping, and an anonymized RetailCRM HMAC
+  reconciliation projection (no RetailCRM calls).
+- **PII sanitizer** — closed projections exclude names, contacts,
+  addresses, comments, credentials, and upstream error payloads; errors
+  expose only local category, HTTP status, operation id, retryability,
+  and a sanitized message.
+- **HMAC reconciliation projection** — deterministic HMAC-SHA256 join
+  keys from normalized posting/order identifiers with an injected
+  secret; source identifiers are never exposed. Duplicate/reload inputs
+  yield one join key and an explicit duplicate count.
+- **Synchronous advertising stats** — Performance API statistics are
+  read via existing list/statistics endpoints only; no report
+  generation.
+- Tests and contracts covering the mutation refusal, PII sanitization,
+  duplicate handling, stale-metadata blocking, and stdout protocol
+  purity.
+
+### Changed
+
+- **MCP v1 pin** — dependency bound to `mcp>=1.27,<2` until an explicit
+  MCP v2 migration is accepted.
+- **stderr logging** — application and transport logs go to stderr;
+  stdout is reserved exclusively for MCP framing.
+
+### Removed
+
+- **Generic executor** — the write-capable `ozon_call_method` /
+  `ozon_fetch_all` generic execution tools and their `confirm_write` /
+  mutation-flag bypasses were deleted entirely. There is no generic
+  call/fetch route to any operation id.
+
 ## [0.6.0] — 2026-04-17
 
 Six-phase release focused on production-grade reliability and on

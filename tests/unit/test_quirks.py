@@ -78,21 +78,21 @@ def test_every_destructive_method_has_safety_warning(
     assert not missing, f"Destructive methods without safety_warning: {missing}"
 
 
-def test_safety_warning_destructive_text_mentions_double_confirm(kb) -> None:
+def test_safety_warning_destructive_text_states_read_only(kb) -> None:
     quirks = kb.quirks_for("ProductAPI_DeleteProducts")
     warnings = [q.safety_warning for q in quirks if q.safety_warning]
     assert warnings
-    assert any(
-        "i_understand_this_modifies_data" in w.lower() or "двойн" in w.lower()
-        for w in warnings
-    )
+    assert any("read-only" in w.lower() for w in warnings)
+    assert all("i_understand_this_modifies_data" not in w for w in warnings)
+    assert all("confirm_write" not in w for w in warnings)
 
 
-def test_safety_warning_write_mentions_confirm_write(kb) -> None:
+def test_safety_warning_write_states_read_only(kb) -> None:
     quirks = kb.quirks_for("ActivateCampaign")
     warnings = [q.safety_warning for q in quirks if q.safety_warning]
     assert warnings
-    assert any("confirm_write" in w.lower() for w in warnings)
+    assert any("read-only" in w.lower() for w in warnings)
+    assert all("confirm_write" not in w for w in warnings)
 
 
 # ── description overrides coverage ───────────────────────────────────

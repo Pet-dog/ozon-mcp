@@ -664,8 +664,8 @@
 
 # --- Phase 3 (2026-04-17): auto-generated safety_warning entries ---
 # Covers all 38 destructive methods + ~5 high-impact write methods.
-# Source: catalog scan; safety_warning text is the canonical reminder
-# that ozon_call_method enforces confirm_write / double-confirm.
+# Source: catalog scan. The warnings document upstream risk of these
+# methods; execution is unavailable in this strict read-only fork.
 
 - operation_id: ProductAPI_ProductArchive
   api: seller
@@ -673,344 +673,301 @@
   description: path segment 'archive' contains 'archive'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: ProductAPI_ProductUnarchive
   api: seller
   title: DESTRUCTIVE — Вернуть товар из архива
   description: path segment 'unarchive' contains 'unarchive'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: ProductAPI_DeleteProducts
   api: seller
   title: DESTRUCTIVE — Удалить товар без SKU из архива
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: promos_task_decline
   api: seller
   title: DESTRUCTIVE — Отклонить заявку на скидку
   description: path segment 'decline' contains 'decline'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: pricing_items-delete
   api: seller
   title: DESTRUCTIVE — Удалить товары из стратегии
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: pricing_delete
   api: seller
   title: DESTRUCTIVE — Удалить стратегию
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: carriagePassDelete
   api: seller
   title: DESTRUCTIVE — Удалить пропуск
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: returnPassDelete
   api: seller
   title: DESTRUCTIVE — Удалить пропуск для возврата
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: CertificateDelete
   api: seller
   title: DESTRUCTIVE — Удалить сертификат
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: ArchiveWarehouseFBS
   api: seller
   title: DESTRUCTIVE — Перенести склад в архив
   description: path segment 'archive' contains 'archive'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: UnarchiveWarehouseFBS
   api: seller
   title: DESTRUCTIVE — Перенести склад из архива
   description: path segment 'unarchive' contains 'unarchive'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: CargoesAPI_CargoesDelete
   api: seller
   title: DESTRUCTIVE — Удалить грузоместо в заявке на поставку
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: SupplyOrderAPI_SupplyOrderCancel
   api: seller
   title: DESTRUCTIVE — Отменить заявку на поставку
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: CarriageAPI_CarriageCancel
   api: seller
   title: DESTRUCTIVE — Удаление отгрузки
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: PostingAPI_GetPostingFbsCancelReasonV1
   api: seller
   title: DESTRUCTIVE — Причины отмены отправления
   description: path segment 'cancel-reason' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: PostingAPI_CancelFbsPostingProduct
   api: seller
   title: DESTRUCTIVE — Отменить отправку некоторых товаров в отправлении
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: PostingAPI_CancelFbsPosting
   api: seller
   title: DESTRUCTIVE — Отменить отправление
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: RFBSReturnsAPI_ReturnsRfbsRejectV2
   api: seller
   title: DESTRUCTIVE — Отклонить заявку на возврат
   description: path segment 'reject' contains 'reject'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: CancellationAPI_ConditionalCancellationRejectV2
   api: seller
   title: DESTRUCTIVE — Отклонить заявку на отмену rFBS
   description: path segment 'reject' contains 'reject'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: invoice_delete
   api: seller
   title: DESTRUCTIVE — Удалить ссылку на счёт-фактуру
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: WarehouseFbsPickUpCourierCancel
   api: seller
   title: DESTRUCTIVE — Отменить вызов курьера на забор отгрузки pick-up
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: PolygonDelete
   api: seller
   title: DESTRUCTIVE — Удалить полигон из области доставки
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: ReviewAPI_CommentDelete
   api: seller
   title: DESTRUCTIVE — Удалить комментарий на отзыв
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: QuestionAnswer_Delete
   api: seller
   title: DESTRUCTIVE — Удалить ответ на вопрос
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: SellerActionsProductsDelete
   api: seller
   title: DESTRUCTIVE — Удалить товары из акции
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: SellerActionsArchive
   api: seller
   title: DESTRUCTIVE — Перенести акцию в архив
   description: path segment 'archive' contains 'archive'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: DeleteNotification
   api: seller
   title: DESTRUCTIVE — Удалить URL-адрес для уведомлений
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: FbpDraftDirectDelete
   api: seller
   title: DESTRUCTIVE — Удалить черновик заявки на поставку
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: FbpDraftDropOffDelete
   api: seller
   title: DESTRUCTIVE — Удалить черновик для доставки в drop-off пункт
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: FbpAPI_FbpOrderDirectCancel
   api: seller
   title: DESTRUCTIVE — Отменить поставку
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: FbpAPI_FbpDraftPickUpDelete
   api: seller
   title: DESTRUCTIVE — Отменить черновик заявки на pick-up поставку
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: FbpAPI_FbpOrderDropOffCancel
   api: seller
   title: DESTRUCTIVE — Отменить поставку drop-off
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: FbpAPI_FbpOrderPickUpCancel
   api: seller
   title: DESTRUCTIVE — Отменить pick-up поставку
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: OrderAPI_OrderCancel
   api: seller
   title: DESTRUCTIVE — Отменить заказ
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: OrderAPI_OrderCancelCheck
   api: seller
   title: DESTRUCTIVE — Проверить возможность отмены заказа
   description: operationId contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: PostingAPI_PostingCancel
   api: seller
   title: DESTRUCTIVE — Отменить отправление из заказа
   description: path segment 'cancel' contains 'cancel'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: DeleteProducts
   api: performance
   title: DESTRUCTIVE — Удалить товары из кампании
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: ExternalCampaign_DeleteSearchPromoBidsV2
   api: performance
   title: DESTRUCTIVE — Удалить товар из продвижения в оплате за заказ
   description: path segment 'delete' contains 'delete'
   severity: critical
   extracted_from: curated
-  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. ozon_call_method
-    требует confirm_write=True И i_understand_this_modifies_data=True. После выполнения отменить нельзя.
+  safety_warning: DESTRUCTIVE метод — необратимо удаляет/отменяет/архивирует данные. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: ProductAPI_ImportProductsV3
   api: seller
   title: WRITE — Создать или обновить товар
   description: path segment 'import' contains 'import'
   severity: warning
   extracted_from: curated
-  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. ozon_call_method требует confirm_write=True.
-    Проверь схему через ozon_describe_method перед вызовом.
+  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: PostingAPI_ShipFbsPostingV4
   api: seller
   title: WRITE — Собрать заказ (версия 4)
   description: path segment 'ship' contains 'ship'
   severity: warning
   extracted_from: curated
-  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. ozon_call_method требует confirm_write=True.
-    Проверь схему через ozon_describe_method перед вызовом.
+  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: SubmitRequest
   api: performance
   title: WRITE — Статистика по кампании
   description: operationId contains 'request'
   severity: warning
   extracted_from: curated
-  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. ozon_call_method требует confirm_write=True.
-    Проверь схему через ozon_describe_method перед вызовом.
+  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: ActivateCampaign
   api: performance
   title: WRITE — Активировать кампанию
   description: path segment 'activate' contains 'activate'
   severity: warning
   extracted_from: curated
-  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. ozon_call_method требует confirm_write=True.
-    Проверь схему через ozon_describe_method перед вызовом.
+  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. В строгом read-only форке выполнение этого метода недоступно.
 - operation_id: DeactivateCampaign
   api: performance
   title: WRITE — Выключить кампанию
   description: path segment 'deactivate' contains 'deactivate'
   severity: warning
   extracted_from: curated
-  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. ozon_call_method требует confirm_write=True.
-    Проверь схему через ozon_describe_method перед вызовом.
+  safety_warning: WRITE метод — изменяет данные в кабинете Ozon. В строгом read-only форке выполнение этого метода недоступно.
 
 
 - operation_id: ProductAPI_GetProductList
@@ -1037,8 +994,8 @@
       Ожидать получить цены и остатки — этот метод возвращает только
       идентификаторы. Для полных данных нужен ProductAPI_GetProductInfoPrices.
     - >
-      Не использовать ozon_fetch_all — по умолчанию возвращает
-      только первую страницу (1000 товаров).
+      Забывать про пагинацию — по умолчанию возвращается
+      только первая страница (1000 товаров).
 
 - operation_id: WarehouseListV2
   api: seller

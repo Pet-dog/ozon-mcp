@@ -179,7 +179,7 @@
     которой нет у кабинета. Обычно пара к message "no access to this
     method" или "not available with existing subscription".
   fix: |
-    Проверь подписку через ozon_get_subscription_status. Если кабинет
+    Проверь подписку через ozon_seller_status. Если кабинет
     действительно ниже требуемого тира — этот метод недоступен пока
     подписка не повысится. Используй subscription_overrides.yaml чтобы
     сразу не делать вызов.

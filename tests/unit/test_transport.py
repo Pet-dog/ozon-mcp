@@ -11,6 +11,7 @@ from ozon_mcp.errors import (
     OzonServerError,
     OzonValidationError,
 )
+from ozon_mcp.transport.base import BaseClient
 from ozon_mcp.transport.ratelimit import RateLimitRegistry
 from ozon_mcp.transport.seller import SellerClient
 
@@ -167,4 +168,39 @@ async def test_seller_client_timeout_wrapped(httpx_mock, rate_limits) -> None:
     with pytest.raises(OzonServerError) as exc:
         await client.request("POST", "/v1/test", json_body={})
     assert "timeout" in exc.value.message.lower()
+    await client.aclose()
+
+
+async def test_base_client_get_passes_query_params_no_body(
+    httpx_mock, rate_limits
+) -> None:
+    """GET requests must carry query params (Performance-style) and no JSON body."""
+
+    class _LocalClient(BaseClient):
+        base_url = "https://api-performance.ozon.ru"
+
+    httpx_mock.add_response(
+        url="https://api-performance.ozon.ru/api/client/statistics"
+        "?campaignIds=123&dateFrom=2026-01-01&dateTo=2026-01-31",
+        method="GET",
+        json={"result": []},
+        status_code=200,
+    )
+    client = _LocalClient(rate_limits=rate_limits)
+    response = await client.request(
+        "GET",
+        "/api/client/statistics",
+        query_params={
+            "campaignIds": "123",
+            "dateFrom": "2026-01-01",
+            "dateTo": "2026-01-31",
+        },
+    )
+    assert response == {"result": []}
+    request = httpx_mock.get_request()
+    assert request.method == "GET"
+    assert request.url.params["campaignIds"] == "123"
+    assert request.url.params["dateFrom"] == "2026-01-01"
+    assert request.url.params["dateTo"] == "2026-01-31"
+    assert request.read() == b""
     await client.aclose()

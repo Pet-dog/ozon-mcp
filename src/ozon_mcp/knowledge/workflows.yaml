@@ -348,8 +348,11 @@
       pagination: offset/limit, limit ≤ 1000
       notes: |
         Вызывать не чаще 1 раза в минуту (rate limit 1 req/min, подтверждено
-        live 2026-04-17). Используй ozon_call_method, не ozon_fetch_all
-        в цикле без пауз — поймаешь 429.
+        live 2026-04-17). Для обхода всех страниц используй
+        специализированный ограниченный read-only аналитический
+        инструмент, если он
+        зарегистрирован; иначе этот строгий форк не выполняет такую
+        операцию — избегай циклов без пауз, поймаешь 429.
     - n: 2
       operation_id: AnalyticsAPI_AnalyticsStocks
       purpose: |
@@ -403,7 +406,7 @@
       purpose: Базовая информация о кабинете и тариф подписки
       notes: |
         subscription.type определяет какие методы доступны
-        (см. ozon_list_methods_for_subscription).
+        (см. ozon_seller_status).
     - n: 3
       operation_id: AverageDeliveryTimeSummary
       purpose: Среднее время доставки и lost_profit
@@ -548,7 +551,7 @@
   rate_limit_note: 60/min для PREMIUM_PLUS, 30/min для PREMIUM.
   subscription_note: |
     Premium-метод. Для тарифов ниже PREMIUM возвращает 403/limited data.
-    Используй ozon_get_subscription_status перед вызовом.
+    Используй ozon_seller_status перед вызовом.
   gotchas:
     - На FBS-складах эти данные не считаются — только FBO
     - warehouse_id может быть null для transit-стоков

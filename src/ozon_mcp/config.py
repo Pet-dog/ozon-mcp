@@ -23,7 +23,19 @@ class Config(BaseSettings):
     performance_client_id: SecretStr | None = None
     performance_client_secret: SecretStr | None = None
 
+    analytics_hmac_secret: SecretStr | None = None
+
     log_level: str = "INFO"
+
+    def analytics_hmac_secret_value(self) -> str | None:
+        """Return the reconciliation HMAC secret, or None if unset.
+
+        unwrap safely at the single call site that derives join keys;
+        never log, repr, or expose this value elsewhere.
+        """
+        if self.analytics_hmac_secret is None:
+            return None
+        return self.analytics_hmac_secret.get_secret_value()
 
     def has_seller_credentials(self) -> bool:
         return bool(self.client_id and self.api_key)

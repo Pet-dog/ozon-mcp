@@ -16,7 +16,7 @@ import pytest
 from ozon_mcp.knowledge.loader import load_knowledge
 from ozon_mcp.schema import load_catalog
 from ozon_mcp.schema.extractor import SUBSCRIPTION_TIERS
-from ozon_mcp.tools.execution import TIER_HIERARCHY, _normalize_tier
+from ozon_mcp.tools.subscription import TIER_HIERARCHY, _normalize_tier
 
 
 @pytest.fixture(scope="module")
