@@ -701,6 +701,192 @@ def test_executor_passes_operation_section_and_no_retry(
     ]
 
 
+# ------------------------------------------- finance completeness (2026-09-06)
+
+
+def _fin_op(op_type: str = "OrderCommission", amount: str = "10.00") -> dict:
+    return {"operation_type": op_type, "amount": amount, "services": []}
+
+
+def test_finance_page_size_1000_fails_before_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """page_size=1000 is rejected with invalid_params before the executor."""
+    recorder = RecordingExecutor({"seller": []})
+    mcp = _mcp(monkeypatch, recorder)
+    out = asyncio.run(
+        _call(
+            mcp,
+            "ozon_finance_analytics",
+            date_from="2026-01-01",
+            date_to="2026-01-31",
+            page_size=1000,
+        )
+    )
+    assert out["error"]["category"] == "invalid_params"
+    assert "page_size" in out["error"]["message"]
+    assert recorder.requests == []  # no provider call was made
+
+
+def test_finance_measured_regression_is_partial(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The measured RED: 100 fetched ops, row_count=985, no page_count.
+
+    A provider-capped page must never be published as complete.
+    """
+    response = {
+        "result": {
+            "operations": [_fin_op() for _ in range(100)],
+            "row_count": 985,
+        }
+    }
+    recorder = RecordingExecutor({"seller": [response]})
+    mcp = _mcp(monkeypatch, recorder)
+    out = asyncio.run(
+        _call(
+            mcp,
+            "ozon_finance_analytics",
+            date_from="2026-01-01",
+            date_to="2026-01-31",
+            page_size=100,
+        )
+    )
+    assert recorder.requests[0][2]["page_size"] == 100
+    assert out["fetched_operations"] == 100
+    assert out["total_reported"] == 985
+    assert out["completeness"] == "partial"
+    assert out["truncation"] == {
+        "truncated": True,
+        "reason": "row_count exceeds fetched operations",
+    }
+    # aggregated buckets hold fetched rows only — no invented duplicates
+    assert out["row_count"] == 1
+    assert out["rows"][0]["operation_count"] == 100
+
+
+def test_finance_complete_single_page(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Full coverage proven by provider totals: page_count=1, row_count=fetched."""
+    response = {
+        "result": {
+            "operations": [_fin_op("OrderCommission"), _fin_op("Delivery")],
+            "row_count": 2,
+            "page_count": 1,
+        }
+    }
+    recorder = RecordingExecutor({"seller": [response]})
+    mcp = _mcp(monkeypatch, recorder)
+    out = asyncio.run(
+        _call(
+            mcp,
+            "ozon_finance_analytics",
+            date_from="2026-01-01",
+            date_to="2026-01-31",
+            page_size=100,
+        )
+    )
+    assert out["completeness"] == "complete"
+    assert out["truncation"] is None
+    assert out["fetched_operations"] == 2
+    assert out["total_reported"] == 2
+    assert out["page_count_reported"] == 1
+    assert [r["operation_type"] for r in out["rows"]] == ["Delivery", "OrderCommission"]
+
+
+def test_finance_ambiguous_full_page_and_later_page_are_partial(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A full page without provider totals, and page>1, are both partial."""
+    ambiguous = {
+        "result": {"operations": [_fin_op() for _ in range(100)]}
+    }
+    recorder = RecordingExecutor({"seller": [ambiguous, ambiguous]})
+    mcp = _mcp(monkeypatch, recorder)
+    full_first = asyncio.run(
+        _call(
+            mcp,
+            "ozon_finance_analytics",
+            date_from="2026-01-01",
+            date_to="2026-01-31",
+            page_size=100,
+        )
+    )
+    assert full_first["completeness"] == "partial"
+    assert full_first["truncation"]["reason"] == (
+        "full first page without provider totals"
+    )
+    later = asyncio.run(
+        _call(
+            mcp,
+            "ozon_finance_analytics",
+            date_from="2026-01-01",
+            date_to="2026-01-31",
+            page=2,
+            page_size=100,
+        )
+    )
+    assert later["completeness"] == "partial"
+    assert later["truncation"]["reason"] == "non-first page requested"
+
+
+def test_finance_short_page_without_totals_is_partial(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Both totals absent on a short first page: partial, never complete."""
+    response = {
+        "result": {"operations": [_fin_op() for _ in range(3)]}
+    }
+    recorder = RecordingExecutor({"seller": [response]})
+    mcp = _mcp(monkeypatch, recorder)
+    out = asyncio.run(
+        _call(
+            mcp,
+            "ozon_finance_analytics",
+            date_from="2026-01-01",
+            date_to="2026-01-31",
+            page_size=100,
+        )
+    )
+    assert out["fetched_operations"] == 3
+    assert out["completeness"] == "partial"
+    assert out["truncation"] == {
+        "truncated": True,
+        "reason": "provider totals absent or unintelligible",
+    }
+
+
+def test_finance_contradictory_row_count_below_fetched_is_partial(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """row_count smaller than the fetched page contradicts coverage."""
+    response = {
+        "result": {
+            "operations": [_fin_op() for _ in range(5)],
+            "row_count": 2,
+        }
+    }
+    recorder = RecordingExecutor({"seller": [response]})
+    mcp = _mcp(monkeypatch, recorder)
+    out = asyncio.run(
+        _call(
+            mcp,
+            "ozon_finance_analytics",
+            date_from="2026-01-01",
+            date_to="2026-01-31",
+            page_size=100,
+        )
+    )
+    assert out["fetched_operations"] == 5
+    assert out["total_reported"] == 2
+    assert out["completeness"] == "partial"
+    assert out["truncation"] == {
+        "truncated": True,
+        "reason": "row_count below fetched operations",
+    }
+
+
 def test_provider_rate_limit_envelope_is_closed() -> None:
     """429 maps to rate_limited with status, operation id, integer
     retry_after_seconds, and no payload or raw provider message."""

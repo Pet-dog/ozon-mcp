@@ -111,3 +111,38 @@ where the delivered implementation diverges in strength, not in intent.
 
 Criterion 3 is resolved more strongly by deletion of the generic surface;
 Criterion 10 required no divergence from the original acceptance contract.
+
+## Finance completeness amendment — 2026-09-06
+
+Measured RED on base `158ba79`:
+`ozon_finance_analytics(page_size=1000)` accepted the request, the provider
+returned 100 operations while `row_count=985` and `page_count` was absent,
+and the tool still published `completeness=complete`. Two defects combined:
+the tool's `page_size` bound (1..1000) exceeded the provider's silent
+100-operations-per-page cap, and completeness was derived from
+`page_count` defaulting to 1 when the provider omitted it.
+
+Binding additions (criteria above preserved verbatim):
+
+- AC-OZ-FIN-01: `page_size` outside 1..100 must return the existing closed
+  `invalid_params` envelope before the executor is called. Values 1..100
+  preserve the existing public request and response shape.
+- AC-OZ-FIN-02: `completeness` is `complete` only when usable provider
+  evidence proves the returned projection contains the whole requested
+  result set: `row_count` equals fetched operations or `page_count` proves
+  no later pages, and no reported total contradicts the fetched page or the
+  requested page. Both totals absent or unintelligible (even on a short
+  page), `row_count` above or below the fetched count, `page_count` later
+  than or behind the requested page, `page > 1`, or an ambiguous full page
+  without provider totals must produce `partial` plus truthful truncation
+  evidence. Settlement rows must never be invented or duplicated.
+- AC-OZ-FIN-03: the read-only operation, date validation, money
+  aggregation, sanitization, retries, timeout behavior, and closed
+  provider-error handling are unchanged.
+- AC-OZ-FIN-04: finance knowledge entries advertising `page_size=1000`
+  are corrected in place; no second workflow or pagination subsystem is
+  introduced.
+- AC-OZ-FIN-05: focused deterministic tests pin the measured 100/985
+  regression, fail-before-request for `page_size=1000`, and an actually
+  complete single page.
+

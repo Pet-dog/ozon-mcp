@@ -114,3 +114,29 @@ disclose the honest stale state.
 
 Refutable by: live divergence of any pinned endpoint or response shape, or any
 content-hash mismatch.
+
+## 2026-09-06 — Finance completeness is proven, never defaulted
+
+Decision: `ozon_finance_analytics` rejects `page_size` outside 1..100 before
+the executor is called, and reports `completeness=complete` only when
+usable provider evidence proves the projection covers the whole requested
+result set. A total is usable only when the provider actually reported it
+and it is intelligible (a non-negative integer). A first page is complete
+only when `row_count` equals the fetched operations or `page_count` proves
+there are no later pages, and no reported total contradicts the fetched
+page or the requested page. Both totals absent or unintelligible,
+`row_count` above or below the fetched count, a reported later page,
+`page_count` behind the requested page, or `page > 1` yield `partial` with
+a truthful concatenated truncation reason — a short page without totals is
+partial too, because absence of totals is not evidence of a single-page
+result set. No rows are invented or duplicated to close the gap.
+
+Basis: measured on base `158ba79` — a `page_size=1000` request returned 100
+operations with `row_count=985` and no `page_count`, yet the tool published
+`complete` because `page_count` defaulted to 1. The provider silently caps
+the endpoint at 100 operations per page, so the documented maximum of 1000
+cannot be honored and must not be requested.
+
+Refutable by: a live provider response proving pages above 100 operations
+are actually returned and totaled, together with an updated pinned snapshot.
+

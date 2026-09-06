@@ -11,7 +11,9 @@
         to: "2026-01-31T23:59:59Z"
       transaction_type: all
     page: 1
-    page_size: 1000
+    page_size: 100
+    # page_size выше 100 провайдер молча урезает до 100 операций на страницу;
+    # валидный диапазон MCP-инструмента — 1..100.
 
 - operation_id: FinanceAPI_FinanceTransactionListV3
   title: Транзакции по конкретному отправлению
