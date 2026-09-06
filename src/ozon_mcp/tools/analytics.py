@@ -154,7 +154,11 @@ def register(
         try:
             start, end = _validate_period(date_from, date_to)
             page = _clamp_int(page, 1, 10_000, "page")
-            page_size = _clamp_int(page_size, 1, 1000, "page_size")
+            # The provider silently caps FinanceTransactionListV3 pages at
+            # 100 operations regardless of the requested page_size, so a
+            # larger request would be reported as fetched while the window
+            # is actually provider-truncated. Reject before the executor.
+            page_size = _clamp_int(page_size, 1, 100, "page_size")
             executor = _make_executor()
             data = await executor.seller(
                 "FinanceAPI_FinanceTransactionListV3",
@@ -208,9 +212,44 @@ def register(
                     bucket["services_total"] = round(
                         bucket["services_total"] + value, 2
                     )
-        total = _int_or(result.get("row_count"), len(operations))
-        page_count = _int_or(result.get("page_count"), 1)
-        fetched_all = page_count <= 1 or page >= page_count
+        # Completeness must be proven by usable provider evidence, never
+        # defaulted. A total is usable only when it was actually reported
+        # and is intelligible (a non-negative integer). A first page is
+        # complete only when row_count equals the fetched operations or
+        # page_count proves there are no later pages, and no reported
+        # total contradicts the fetched page or the requested page.
+        row_count_raw = result.get("row_count")
+        page_count_raw = result.get("page_count")
+        reported_row_count = _int_or(row_count_raw, -1)
+        reported_page_count = _int_or(page_count_raw, -1)
+        row_usable = row_count_raw is not None and reported_row_count >= 0
+        page_usable = page_count_raw is not None and reported_page_count >= 0
+        fetched = len(operations)
+        reasons: list[str] = []
+        if row_usable and reported_row_count > fetched:
+            reasons.append("row_count exceeds fetched operations")
+        if row_usable and reported_row_count < fetched:
+            reasons.append("row_count below fetched operations")
+        if page_usable and reported_page_count > page:
+            reasons.append("later pages reported")
+        if page_usable and reported_page_count < page:
+            reasons.append("page_count behind requested page")
+        if page > 1:
+            reasons.append("non-first page requested")
+        if page == 1 and not row_usable and not page_usable:
+            # No usable total exists to prove first-page coverage — not
+            # even for a short page, since absence of totals is not
+            # evidence of a single-page result set.
+            reasons.append(
+                "full first page without provider totals"
+                if fetched == page_size
+                else "provider totals absent or unintelligible"
+            )
+        fetched_all = not reasons
+        total = reported_row_count if reported_row_count >= 0 else fetched
+        page_count = reported_page_count if reported_page_count >= 0 else (
+            page if fetched_all else page + 1
+        )
         return _tool_guard(
             {
                 "period": {"date_from": date_from, "date_to": date_to},
@@ -219,12 +258,14 @@ def register(
                 "page_size": page_size,
                 "rows": sorted(aggregate.values(), key=lambda b: b["operation_type"]),
                 "row_count": len(aggregate),
-                "fetched_operations": len(operations),
+                "fetched_operations": fetched,
                 "total_reported": total,
                 "page_count_reported": page_count,
                 "completeness": "complete" if fetched_all else "partial",
                 "truncation": (
-                    None if fetched_all else {"truncated": True, "reason": "page window"}
+                    None
+                    if fetched_all
+                    else {"truncated": True, "reason": "; ".join(reasons)}
                 ),
                 "provenance": ["FinanceAPI_FinanceTransactionListV3"],
             }

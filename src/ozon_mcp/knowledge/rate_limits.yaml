@@ -69,7 +69,8 @@
 - api: seller
   operation_id: FinanceAPI_FinanceTransactionListV3
   per_minute: 100
-  note: Finance reports section limit — uses page_size up to 1000.
+  note: Finance reports section limit — provider caps page_size at 100
+        operations per page despite the documented maximum of 1000.
   source: docs
 
 - api: seller

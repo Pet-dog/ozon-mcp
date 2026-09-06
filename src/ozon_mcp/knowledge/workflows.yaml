@@ -167,7 +167,8 @@
     - n: 1
       operation_id: FinanceAPI_FinanceTransactionListV3
       purpose: Получить транзакции за месяц
-      pagination: page/page_size, page_size=1000, идти до result.page_count
+      pagination: page/page_size, page_size=100 (провайдер молча урезает
+        значения выше 100), идти до result.page_count
       notes: |
         Один запрос = один календарный месяц, не больше. Для исторической
         загрузки итерируй по месяцам в Celery worker'е. Используй filter.date,
