@@ -246,10 +246,12 @@ def register(
                 else "provider totals absent or unintelligible"
             )
         fetched_all = not reasons
-        total = reported_row_count if reported_row_count >= 0 else fetched
-        page_count = reported_page_count if reported_page_count >= 0 else (
-            page if fetched_all else page + 1
-        )
+        # Reported totals are echoed exactly as the provider reported them
+        # (including contradictory values used to explain partial results)
+        # or null when the provider omitted or garbled them — never filled
+        # with local fallback counts that Ozon did not report.
+        total = reported_row_count if row_usable else None
+        page_count_total = reported_page_count if page_usable else None
         return _tool_guard(
             {
                 "period": {"date_from": date_from, "date_to": date_to},
@@ -260,7 +262,7 @@ def register(
                 "row_count": len(aggregate),
                 "fetched_operations": fetched,
                 "total_reported": total,
-                "page_count_reported": page_count,
+                "page_count_reported": page_count_total,
                 "completeness": "complete" if fetched_all else "partial",
                 "truncation": (
                     None

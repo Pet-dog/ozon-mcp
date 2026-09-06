@@ -755,6 +755,7 @@ def test_finance_measured_regression_is_partial(
     assert recorder.requests[0][2]["page_size"] == 100
     assert out["fetched_operations"] == 100
     assert out["total_reported"] == 985
+    assert out["page_count_reported"] is None  # provider omitted page_count
     assert out["completeness"] == "partial"
     assert out["truncation"] == {
         "truncated": True,
@@ -814,6 +815,8 @@ def test_finance_ambiguous_full_page_and_later_page_are_partial(
         )
     )
     assert full_first["completeness"] == "partial"
+    assert full_first["total_reported"] is None  # no local fallback count
+    assert full_first["page_count_reported"] is None
     assert full_first["truncation"]["reason"] == (
         "full first page without provider totals"
     )
@@ -850,6 +853,8 @@ def test_finance_short_page_without_totals_is_partial(
         )
     )
     assert out["fetched_operations"] == 3
+    assert out["total_reported"] is None  # absent, not filled with fetched
+    assert out["page_count_reported"] is None  # absent, not filled with page+1
     assert out["completeness"] == "partial"
     assert out["truncation"] == {
         "truncated": True,
